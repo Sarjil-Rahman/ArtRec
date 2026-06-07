@@ -1,0 +1,75 @@
+{
+  "run_id": "1eaa7f5d-25f0-49e0-86a4-0e98f628d32c",
+  "timestamp_utc": "2026-06-07T22:34:41.898980+00:00",
+  "git_commit": null,
+  "data_paths": {
+    "catalog": "data\\raw\\catalog.csv",
+    "users": "data\\raw\\users.csv",
+    "impressions": "data\\raw\\impressions.csv",
+    "train_features": "data\\processed\\train_features.csv",
+    "test_features": "data\\processed\\test_features.csv"
+  },
+  "artifact_paths": {
+    "ranker": "artifacts\\ranker.joblib",
+    "retriever": "artifacts\\retriever.joblib",
+    "business_metrics": "artifacts\\business_metrics.json",
+    "business_report": "artifacts\\business_report.md",
+    "manifest": "artifacts\\manifest.json"
+  },
+  "model_type": "sklearn.linear_model.LogisticRegression",
+  "features": {
+    "numeric": [
+      "position",
+      "popularity_score_pre",
+      "affinity_score",
+      "price",
+      "margin",
+      "freshness",
+      "budget_mean",
+      "price_sensitivity",
+      "novelty_preference",
+      "repeat_tolerance",
+      "activity_level",
+      "conversion_propensity",
+      "save_propensity",
+      "price_gap_ratio",
+      "price_above_budget",
+      "margin_to_price",
+      "top_3_position",
+      "top_5_position",
+      "user_item_seen_before",
+      "user_artist_seen_before",
+      "user_style_seen_before",
+      "user_item_not_interested_before",
+      "user_artist_not_interested_before",
+      "user_style_not_interested_before",
+      "session_rank_inverse",
+      "tag_count",
+      "has_blue_tag",
+      "has_nature_tag",
+      "hour",
+      "day_of_week",
+      "is_weekend"
+    ],
+    "categorical": [
+      "surface",
+      "device",
+      "country",
+      "segment",
+      "style"
+    ]
+  },
+  "metrics_path": "artifacts\\model_metrics.json",
+  "config": {
+    "random_seed": 42
+  },
+  "python_version": "3.10.11",
+  "package_versions": {
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.7.2",
+    "fastapi": "0.128.0",
+    "pydantic": "2.12.5",
+    "joblib": "1.5.3"
+  }
+}

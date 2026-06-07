@@ -1,0 +1,6 @@
+{
+  "document_id": "doc_med_002",
+  "title": "Synthetic Medical Policy Excerpt",
+  "domain": "medical",
+  "text": "Synthetic document for portfolio testing only. Policy: home oxygen coverage after acute respiratory illness. Decision: coverage is approved when resting oxygen saturation is at or below 88 percent on room air and the ordering clinician documents expected benefit. Criteria:\n- oxygen saturation at or below 88 percent at rest\n- clinician order with duration and flow rate\n- reassessment within thirty days. Exclusion: oxygen is not covered for convenience use without documented hypoxemia."
+}

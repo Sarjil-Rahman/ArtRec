@@ -1,0 +1,53 @@
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+prompt.md
+codexset
+.codex/
+
+*.log
+logs/
+runtime_logs/
+uvicorn*.log
+tmp/
+temp/
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+.idea/
+.vscode/
+
+# The repository intentionally keeps small demo data and artifacts so the API
+# can run immediately. Regenerate them with `python scripts/build_all.py`.
+artifacts/agentic_eval/
+
+# Local scratch notes
+AGENTS.md
+
+# Local archives
+*.zip
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Build outputs
+build/
+dist/

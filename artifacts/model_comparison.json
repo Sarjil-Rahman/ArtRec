@@ -1,0 +1,71 @@
+{
+  "notes": "Offline comparison on synthetic time-based splits. These metrics are diagnostics for model selection, not production uplift or A/B-test proof.",
+  "splits": {
+    "train": {
+      "logistic_ranker": {
+        "rows": 7440,
+        "positive_rate": 0.038306451612903226,
+        "roc_auc": 0.6949732122059166,
+        "average_precision": 0.0761384736748327,
+        "ndcg_at_5": 0.16692288765646593,
+        "map_at_5": 0.15214307048984468,
+        "recall_at_5": 0.24193548387096775,
+        "catalog_coverage": 0.8620689655172413
+      },
+      "lightgbm_lambdarank": {
+        "rows": 7440,
+        "positive_rate": 0.038306451612903226,
+        "roc_auc": 0.949520762072897,
+        "average_precision": 0.5821418581673429,
+        "ndcg_at_5": 0.5208888784579462,
+        "map_at_5": 0.5351254480286738,
+        "recall_at_5": 0.5206093189964158,
+        "catalog_coverage": 0.9103448275862069
+      }
+    },
+    "validation": {
+      "logistic_ranker": {
+        "rows": 2480,
+        "positive_rate": 0.029838709677419355,
+        "roc_auc": 0.6483509694232886,
+        "average_precision": 0.05856479781885579,
+        "ndcg_at_5": 0.10408422908355586,
+        "map_at_5": 0.0995967741935484,
+        "recall_at_5": 0.14583333333333331,
+        "catalog_coverage": 0.8181818181818182
+      },
+      "lightgbm_lambdarank": {
+        "rows": 2480,
+        "positive_rate": 0.029838709677419355,
+        "roc_auc": 0.623295365190627,
+        "average_precision": 0.04697155510635823,
+        "ndcg_at_5": 0.1118927063408494,
+        "map_at_5": 0.09422043010752688,
+        "recall_at_5": 0.18817204301075272,
+        "catalog_coverage": 0.9230769230769231
+      }
+    },
+    "test": {
+      "logistic_ranker": {
+        "rows": 2480,
+        "positive_rate": 0.03185483870967742,
+        "roc_auc": 0.5932127436352996,
+        "average_precision": 0.045814980534924755,
+        "ndcg_at_5": 0.11892610393871708,
+        "map_at_5": 0.11196236559139784,
+        "recall_at_5": 0.1760752688172043,
+        "catalog_coverage": 0.8068965517241379
+      },
+      "lightgbm_lambdarank": {
+        "rows": 2480,
+        "positive_rate": 0.03185483870967742,
+        "roc_auc": 0.58890283057165,
+        "average_precision": 0.04106418530272872,
+        "ndcg_at_5": 0.09946177598214315,
+        "map_at_5": 0.08098118279569892,
+        "recall_at_5": 0.1814516129032258,
+        "catalog_coverage": 0.8827586206896552
+      }
+    }
+  }
+}

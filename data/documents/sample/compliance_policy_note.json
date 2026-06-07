@@ -1,0 +1,6 @@
+{
+  "document_id": "doc_comp_001",
+  "title": "Synthetic Compliance Policy Note",
+  "domain": "compliance",
+  "text": "Synthetic document for portfolio testing only. Risk area: customer data retention. Finding: exported support case files were retained for 120 days after closure, while the internal policy target is 90 days. Severity: medium. Mitigation: add an automated deletion job, log deletion events, and review exceptions during the monthly compliance check."
+}

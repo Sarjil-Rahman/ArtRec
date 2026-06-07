@@ -1,0 +1,61 @@
+{
+  "rows": 2480,
+  "positive_rate": 0.03185483870967742,
+  "roc_auc": 0.6298852271469166,
+  "average_precision": 0.06146935723930523,
+  "ranking": {
+    "precision_at_5": 0.05806451612903226,
+    "recall_at_5": 0.24059139784946237,
+    "hit_rate_at_5": 0.27419354838709675,
+    "ndcg_at_5": 0.1551335069913585,
+    "map_at_5": 0.13797043010752688,
+    "catalog_coverage_at_5": 0.496551724137931,
+    "precision_at_10": 0.04032258064516129,
+    "recall_at_10": 0.32661290322580644,
+    "hit_rate_at_10": 0.3709677419354839,
+    "ndcg_at_10": 0.18530166648480745,
+    "map_at_10": 0.15058563748079876,
+    "catalog_coverage_at_10": 0.7310344827586207,
+    "precision_at_12": 0.039650537634408595,
+    "recall_at_12": 0.37768817204301075,
+    "hit_rate_at_12": 0.41935483870967744,
+    "ndcg_at_12": 0.20055894044297312,
+    "map_at_12": 0.15186688311688312,
+    "catalog_coverage_at_12": 0.7724137931034483,
+    "catalog_coverage": 0.7724137931034483,
+    "artist_diversity_gini_simpson": 0.8560125448028673,
+    "novelty_inverse_popularity": 0.8658129032258065
+  },
+  "proxy_uplift": {
+    "weighted_clicks": {
+      "baseline": 0.4888709677419355,
+      "reranked": 0.46661290322580645,
+      "uplift_pct": -4.552952820851208
+    },
+    "weighted_carts": {
+      "baseline": 0.06741935483870967,
+      "reranked": 0.07532258064516129,
+      "uplift_pct": 11.722488038277513
+    },
+    "weighted_purchases": {
+      "baseline": 0.03870967741935485,
+      "reranked": 0.03822580645161291,
+      "uplift_pct": -1.2500000000000102
+    },
+    "weighted_margin": {
+      "baseline": 2.47978064516129,
+      "reranked": 2.4538387096774192,
+      "uplift_pct": -1.0461383160841424
+    }
+  },
+  "intent_feedback": {
+    "semantic_search_precision_at_10": 0.4433333333333333,
+    "hybrid_vs_personalized_ndcg_delta_at_10": 0.08174066312352138,
+    "not_interested_suppression_rate_at_10": 1.0,
+    "post_feedback_rank_delta_at_10": 9.633333333333333,
+    "semantic_search_cases": 30,
+    "hybrid_eval_cases": 30,
+    "feedback_eval_cases": 30,
+    "notes": "Synthetic offline diagnostics only; not online uplift, not an A/B test."
+  }
+}

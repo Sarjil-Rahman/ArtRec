@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: artrec_app
+    ports:
+      - "8000:8000"
+    environment:
+      ARTREC_DATA_DIR: data
+      ARTREC_ARTIFACT_DIR: artifacts
+      # Set ARTREC_API_KEY to require X-API-Key on recommendation and agentic endpoints.
+      # ARTREC_API_KEY: change-me
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: artrec_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./ops/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./ops/alerts.yml:/etc/prometheus/alerts.yml:ro
+    depends_on:
+      - app

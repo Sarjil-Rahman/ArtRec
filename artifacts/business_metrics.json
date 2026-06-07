@@ -1,0 +1,16 @@
+{
+  "rows": 12400,
+  "sessions": 620,
+  "unique_users": 80,
+  "unique_items_served": 151,
+  "ctr": 0.08290322580645161,
+  "save_rate": 0.027741935483870966,
+  "cart_rate": 0.009758064516129032,
+  "immediate_purchase_rate": 0.004274193548387097,
+  "total_purchases": 62.0,
+  "delayed_purchase_share": 0.14516129032258066,
+  "revenue": 12523.84,
+  "margin": 4775.34,
+  "revenue_per_session": 20.19974193548387,
+  "margin_per_session": 7.7021612903225805
+}
