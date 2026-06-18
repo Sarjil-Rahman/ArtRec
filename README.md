@@ -476,16 +476,6 @@ archives, prompt files, local assistant settings, instruction files, or private
 scratch notes. `.env.example` is fine because it contains placeholders, not
 secrets.
 
-## What I Would Talk Through In An Interview
-
-- Why I used synthetic data and what that does or does not prove.
-- Why time-based validation matters for recommender systems.
-- How I tried to avoid obvious leakage between training and serving features.
-- Why a higher click proxy is not always the same as a better business outcome.
-- How I would move from this demo to real impression logging and online
-  experiments.
-- What would need to change before this could be deployed with real users.
-
 ## Documentation
 
 - [System overview](docs/SYSTEM_OVERVIEW.md)
