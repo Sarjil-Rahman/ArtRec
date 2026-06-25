@@ -22,6 +22,7 @@ from artrec.api.schemas import (
 from artrec.agentic.agent import AgenticRAGPipeline
 from artrec.agentic.evaluation import evaluate_pipeline, load_gold
 from artrec.agentic.ingestion import load_sample_documents
+from artrec.data.io import read_csv_with_types
 from artrec.monitoring.metrics import (
     AGENTIC_LATENCY,
     AGENTIC_LOW_EVIDENCE,
@@ -35,6 +36,16 @@ from artrec.monitoring.metrics import (
     metrics_response,
 )
 from artrec.serve.recommender import RecommendationService
+
+
+def _infer_history_cutoff(data_dir: Path):
+    train_path = data_dir / "processed" / "train_features.csv"
+    if not train_path.exists():
+        return None
+    train_df = read_csv_with_types(train_path)
+    if train_df.empty or "timestamp" not in train_df.columns:
+        return None
+    return train_df["timestamp"].max()
 
 
 def _load_service() -> RecommendationService:
@@ -60,6 +71,7 @@ def _load_service() -> RecommendationService:
         ranker_path=artifact_dir / "ranker.joblib",
         impressions_path=data_dir / "raw" / "impressions.csv",
         semantic_retriever_path=artifact_dir / "semantic_retriever.joblib",
+        history_cutoff=_infer_history_cutoff(data_dir),
     )
 
 
@@ -111,7 +123,7 @@ def health() -> HealthResponse:
     return HealthResponse(status="ok")
 
 
-@app.get("/metrics")
+@app.get("/metrics", dependencies=[Depends(require_api_key)])
 def metrics():
     return metrics_response()
 

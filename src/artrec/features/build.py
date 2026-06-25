@@ -1,9 +1,40 @@
 from __future__ import annotations
 from pathlib import Path
 import math
+import numpy as np
 import pandas as pd
 from artrec.utils.common import ensure_dir
 from artrec.data.io import write_csv
+
+
+def _cosine_sim(a, b) -> float:
+    left = np.array(a, dtype=float)
+    right = np.array(b, dtype=float)
+    return float(np.dot(left, right) / ((np.linalg.norm(left) * np.linalg.norm(right)) + 1e-9))
+
+
+def _historical_count_before_timestamp(
+    df: pd.DataFrame,
+    keys: list[str],
+    value_col: str | None = None,
+) -> pd.Series:
+    work = df[keys + ["timestamp"] + ([value_col] if value_col else [])].copy()
+    work["_row_id"] = np.arange(len(work))
+    work["_event_time"] = pd.to_datetime(work["timestamp"])
+    group_cols = keys + ["_event_time"]
+    if value_col is None:
+        by_time = work.groupby(group_cols, dropna=False).size().rename("_count").reset_index()
+    else:
+        by_time = (
+            work.groupby(group_cols, dropna=False)[value_col]
+            .sum()
+            .rename("_count")
+            .reset_index()
+        )
+    by_time = by_time.sort_values(keys + ["_event_time"])
+    by_time["_prior_count"] = by_time.groupby(keys, dropna=False)["_count"].cumsum() - by_time["_count"]
+    work = work.merge(by_time[group_cols + ["_prior_count"]], on=group_cols, how="left")
+    return work.sort_values("_row_id")["_prior_count"].fillna(0).astype(int)
 
 
 def build_training_frame(
@@ -20,6 +51,7 @@ def build_training_frame(
         "conversion_propensity",
         "save_propensity",
         "preferred_styles",
+        "taste_vector",
     ]
     user_base = users_df[user_cols].copy()
     user_base["preferred_style_count"] = (
@@ -39,7 +71,9 @@ def build_training_frame(
     item_base["has_nature_tag"] = (
         item_base["tags"].fillna("").apply(lambda x: int("nature" in str(x).split("|")))
     )
-    item_base = item_base[["item_id", "tag_count", "has_blue_tag", "has_nature_tag"]]
+    item_base = item_base[
+        ["item_id", "tag_count", "has_blue_tag", "has_nature_tag", "embedding"]
+    ]
 
     impressions = impressions_df.copy()
     if "not_interested" not in impressions.columns:
@@ -61,28 +95,31 @@ def build_training_frame(
     )
     df["price_above_budget"] = (df["price"] > df["budget_mean"]).astype(int)
     df["margin_to_price"] = df["margin"] / df["price"].clip(lower=1.0)
-    ordered = df.sort_values("timestamp")
-    df["user_item_seen_before"] = (
-        ordered.groupby(["user_id", "item_id"]).cumcount().sort_index()
+    if "retrieval_similarity_pre" not in df.columns:
+        df["retrieval_similarity_pre"] = df.apply(
+            lambda row: _cosine_sim(row["taste_vector"], row["embedding"]),
+            axis=1,
+        )
+    df["user_item_seen_before"] = _historical_count_before_timestamp(
+        df, ["user_id", "item_id"]
     )
-    df["user_artist_seen_before"] = (
-        ordered.groupby(["user_id", "artist_id"]).cumcount().sort_index()
+    df["user_artist_seen_before"] = _historical_count_before_timestamp(
+        df, ["user_id", "artist_id"]
     )
-    df["user_style_seen_before"] = (
-        ordered.groupby(["user_id", "style"]).cumcount().sort_index()
+    df["user_style_seen_before"] = _historical_count_before_timestamp(
+        df, ["user_id", "style"]
     )
     df["not_interested"] = df["not_interested"].fillna(0).astype(int)
-    ordered = df.sort_values("timestamp")
     for keys, out_col in [
         (["user_id", "item_id"], "user_item_not_interested_before"),
         (["user_id", "artist_id"], "user_artist_not_interested_before"),
         (["user_id", "style"], "user_style_not_interested_before"),
     ]:
-        historical = (
-            ordered.groupby(keys)["not_interested"].cumsum() - ordered["not_interested"]
+        df[out_col] = _historical_count_before_timestamp(
+            df, keys, value_col="not_interested"
         )
-        df[out_col] = historical.sort_index().fillna(0).astype(int)
     df["session_rank_inverse"] = 1.0 / (df["position"] + 1)
+    df = df.drop(columns=["embedding", "taste_vector"], errors="ignore")
     return df
 
 

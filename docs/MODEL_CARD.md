@@ -16,9 +16,9 @@ The model is not intended for high-stakes decisions. It is a portfolio model for
 
 ## Training setup
 
-The training pipeline uses synthetic logged impressions and interaction labels. Feature tables are split by time rather than randomly, so validation and test rows happen after the training rows.
+The training pipeline uses synthetic logged impressions and interaction labels. Feature tables are split by time rather than randomly, so validation and test rows happen after the training rows. The saved train, validation, and test feature tables are disjoint.
 
-I used pre-impression features only for the serving model. That matters because a serving system cannot use future clicks, carts, or purchases to rank the current slate.
+I used pre-impression features only for the serving model. That matters because a serving system cannot use future clicks, carts, purchases, simulator-only affinity scores, or logged position features to rank the current slate.
 
 ## Models compared
 
@@ -43,7 +43,7 @@ The project reports both classifier-style and recommender-style metrics:
 - catalogue coverage
 - artist diversity
 - novelty
-- offline proxy uplift
+- offline logged-slate replay diagnostics
 
 These are offline metrics on simulated data. They are useful for checking regressions and comparing strategies, but they do not prove real user impact.
 

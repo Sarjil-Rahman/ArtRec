@@ -183,6 +183,10 @@ def evaluate_ranker(test_df: pd.DataFrame, scores: np.ndarray) -> dict:
         "weighted_purchases": uplift("weighted_purchases"),
         "weighted_margin": uplift("weighted_margin"),
     }
+    metrics["proxy_uplift_notes"] = (
+        "Logged-slate replay diagnostic only. These values reuse observed labels "
+        "from already displayed items and are not causal uplift estimates."
+    )
     return metrics
 
 

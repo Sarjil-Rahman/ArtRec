@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse
 import sys
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from artrec.data.catalog import CatalogConfig, generate_catalog, save_catalog
 from artrec.utils.logging import get_logger
 

@@ -4,8 +4,9 @@ import argparse
 from pathlib import Path
 import sys
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from artrec.data.io import read_csv_with_types
 from artrec.evaluation.decision_intelligence import (
     build_uplift_by_segment,
     build_user_segments,
@@ -14,6 +15,16 @@ from artrec.evaluation.decision_intelligence import (
     save_csv,
     write_uplift_summary,
 )
+
+
+def _training_cutoff(data_dir: Path):
+    train_path = data_dir / "processed" / "train_features.csv"
+    if not train_path.exists():
+        return None
+    train_df = read_csv_with_types(train_path)
+    if train_df.empty or "timestamp" not in train_df.columns:
+        return None
+    return train_df["timestamp"].max()
 
 
 def main() -> None:
@@ -29,13 +40,9 @@ def main() -> None:
     catalog, users, interactions, frame = load_demo_frames(
         data_dir, Path(args.artifact_dir)
     )
-    segments_path = data_dir / "processed" / "user_segments.csv"
-    if segments_path.exists():
-        import pandas as pd
-
-        segments = pd.read_csv(segments_path)
-    else:
-        segments = build_user_segments(interactions, catalog, users)
+    segments = build_user_segments(
+        interactions, catalog, users, cutoff=_training_cutoff(data_dir)
+    )
     assigned, _metrics = run_ab_simulation(frame, top_k=args.top_k)
     uplift = build_uplift_by_segment(assigned, segments, catalog)
     save_csv(uplift, report_dir / "uplift_by_segment.csv")

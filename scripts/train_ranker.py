@@ -3,11 +3,10 @@ from pathlib import Path
 import argparse
 import sys
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from artrec.data.io import read_csv_with_types
 from artrec.features.build import (
     build_training_frame,
-    train_test_split_by_time,
     train_validation_test_split_by_time,
     save_feature_frames,
 )
@@ -41,9 +40,10 @@ def main():
     train_core_df, validation_df, test_df = train_validation_test_split_by_time(
         feature_df, validation_ratio=0.2, test_ratio=0.2
     )
-    train_df, _ = train_test_split_by_time(feature_df, test_ratio=0.2)
-    save_feature_frames(train_df, test_df, processed_dir, validation_df=validation_df)
-    ranker = ArtRanker.fit(train_df)
+    save_feature_frames(
+        train_core_df, test_df, processed_dir, validation_df=validation_df
+    )
+    ranker = ArtRanker.fit(train_core_df)
     ranker.save(artifact_dir / "ranker.joblib")
     logistic_baseline = ArtRanker.fit(train_core_df)
     lightgbm_baseline = LightGBMLearningToRanker.fit(

@@ -7,7 +7,8 @@ This repo is a local demo, but I still treated a few security habits as non-nego
 - Real `.env` files are ignored.
 - `.env.example` contains placeholders only.
 - The API can run with an optional API key for protected routes.
-- `/health` and `/metrics` are left open for the local demo.
+- `/health` is left open for the local demo.
+- `/metrics` is open only when no `ARTREC_API_KEY` is configured; with an API key set, metrics require `X-API-Key`.
 - Docker ignores local virtual environments, cache files, private notes, and generated evaluation outputs.
 
 ## Important production gaps

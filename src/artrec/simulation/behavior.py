@@ -62,6 +62,7 @@ class BehaviorSimulator:
         self.item_index = self.catalog_df.set_index("item_id", drop=False)
         self.item_ids = self.catalog_df["item_id"].tolist()
         self.users_df = self._generate_users()
+        self.initial_users_df = self.users_df.copy(deep=True)
         self.user_history = {
             uid: {
                 "seen_items": [],
@@ -352,9 +353,12 @@ class BehaviorSimulator:
                     for pos, item_id in enumerate(slate):
                         item_row = self.item_index.loc[item_id]
                         history = self.user_history[user_row["user_id"]]
-                        self.item_impressions[item_id] += 1
                         history["seen_items"].append(item_id)
                         popularity = self._popularity_score(item_id)
+                        retrieval_similarity = cosine_sim(
+                            np.array(user_row["taste_vector"], dtype=float),
+                            np.array(item_row["embedding"], dtype=float),
+                        )
                         affinity = self._user_item_affinity(user_row, item_row)
                         examined = self.rnd.random() < sigmoid(
                             1.5 * self._position_exam_prob(pos) + 0.3 * popularity - 0.5
@@ -548,6 +552,9 @@ class BehaviorSimulator:
                                 self._position_exam_prob(pos), 4
                             ),
                             "popularity_score_pre": round(popularity, 4),
+                            "retrieval_similarity_pre": round(
+                                retrieval_similarity, 4
+                            ),
                             "affinity_score": round(affinity, 4),
                             "examined": int(examined),
                             "clicked": int(clicked),
@@ -567,9 +574,10 @@ class BehaviorSimulator:
                             or not_interested
                         ):
                             interactions.append(row.copy())
+                        self.item_impressions[item_id] += 1
                 self._drift_user_preferences(user_row["user_id"])
         return (
-            self.users_df.copy(),
+            self.initial_users_df.copy(),
             self.catalog_df.copy(),
             pd.DataFrame(impressions),
             pd.DataFrame(interactions),

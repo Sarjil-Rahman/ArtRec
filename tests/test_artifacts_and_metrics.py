@@ -1,8 +1,9 @@
 from pathlib import Path
 import json
 import sys
+import pandas as pd
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from artrec.models.ranker import ArtRanker
 from artrec.pipeline import build_end_to_end
@@ -37,6 +38,17 @@ def test_build_outputs_artifacts_and_ranking_metrics(tmp_path):
     ]
     for path in expected:
         assert path.exists(), f"Missing expected output: {path}"
+
+    train = pd.read_csv(data_dir / "processed" / "train_features.csv")
+    validation = pd.read_csv(data_dir / "processed" / "validation_features.csv")
+    test = pd.read_csv(data_dir / "processed" / "test_features.csv")
+    key = ["session_id", "timestamp", "user_id", "position", "item_id"]
+    train_keys = set(map(tuple, train[key].astype(str).values.tolist()))
+    validation_keys = set(map(tuple, validation[key].astype(str).values.tolist()))
+    test_keys = set(map(tuple, test[key].astype(str).values.tolist()))
+    assert not train_keys & validation_keys
+    assert not train_keys & test_keys
+    assert not validation_keys & test_keys
 
     ranker = ArtRanker.load(artifact_dir / "ranker.joblib")
     assert ranker is not None

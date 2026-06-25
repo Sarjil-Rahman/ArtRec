@@ -5,7 +5,7 @@ import argparse
 import json
 import sys
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from artrec.data.io import read_csv_with_types
 from artrec.models.ranker import CATEGORICAL_FEATURES, NUMERIC_FEATURES

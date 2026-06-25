@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from artrec.agentic.agent import AgenticRAGPipeline
 from artrec.agentic.evaluation import mrr, ndcg_at_k, precision_at_k, recall_at_k

@@ -16,9 +16,8 @@ NUMERIC_FEATURES = [
     # Only use features available before a recommendation is shown. Post-event
     # signals such as dwell time are kept in raw data for analysis, but excluded
     # here to avoid target leakage and train/serve skew.
-    "position",
     "popularity_score_pre",
-    "affinity_score",
+    "retrieval_similarity_pre",
     "price",
     "margin",
     "freshness",
@@ -32,15 +31,12 @@ NUMERIC_FEATURES = [
     "price_gap_ratio",
     "price_above_budget",
     "margin_to_price",
-    "top_3_position",
-    "top_5_position",
     "user_item_seen_before",
     "user_artist_seen_before",
     "user_style_seen_before",
     "user_item_not_interested_before",
     "user_artist_not_interested_before",
     "user_style_not_interested_before",
-    "session_rank_inverse",
     "tag_count",
     "has_blue_tag",
     "has_nature_tag",

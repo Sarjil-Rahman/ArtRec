@@ -9,7 +9,7 @@ import sys
 import pandas as pd
 import requests
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from artrec.data.met_adapter import adapt_met_objects
 from artrec.data.io import write_csv
 from artrec.utils.logging import get_logger

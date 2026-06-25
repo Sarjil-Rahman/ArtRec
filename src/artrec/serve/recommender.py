@@ -58,6 +58,7 @@ class ServiceAssets:
     retriever: CatalogRetriever
     ranker: ArtRanker
     semantic_retriever: SemanticCatalogRetriever | None = None
+    history_cutoff: pd.Timestamp | None = None
 
 
 @dataclass
@@ -78,6 +79,7 @@ class RecommendationService:
         ranker_path: Path,
         impressions_path: Path | None = None,
         semantic_retriever_path: Path | None = None,
+        history_cutoff: pd.Timestamp | str | None = None,
     ):
         for label, path in {
             "catalog data": catalog_path,
@@ -96,6 +98,11 @@ class RecommendationService:
             if impressions_path and impressions_path.exists()
             else None
         )
+        parsed_cutoff = pd.to_datetime(history_cutoff) if history_cutoff is not None else None
+        if impressions_df is not None and parsed_cutoff is not None:
+            impressions_df = impressions_df[
+                pd.to_datetime(impressions_df["timestamp"]) <= parsed_cutoff
+            ].copy()
         retriever = _load_artifact(
             retriever_path, CatalogRetriever.load, "nearest-neighbour retriever"
         )
@@ -117,6 +124,7 @@ class RecommendationService:
                 retriever,
                 ranker,
                 semantic_retriever,
+                parsed_cutoff,
             )
         )
 
@@ -125,6 +133,10 @@ class RecommendationService:
             hist = self.assets.impressions_df[
                 self.assets.impressions_df["user_id"] == user_id
             ].copy()
+            if self.assets.history_cutoff is not None and "timestamp" in hist.columns:
+                hist = hist[
+                    pd.to_datetime(hist["timestamp"]) <= self.assets.history_cutoff
+                ].copy()
         else:
             hist = pd.DataFrame(
                 columns=["item_id", "artist_id", "style", "not_interested"]
@@ -312,6 +324,11 @@ class RecommendationService:
         work["popularity_score_pre"] = work["popularity_prior"]
         work["retrieval_similarity"] = work.get("retrieval_similarity", 0.0)
         work["semantic_similarity"] = work.get("semantic_similarity", 0.0)
+        work["retrieval_similarity_pre"] = (
+            work["combined_retrieval_score"]
+            if hybrid_mode
+            else work["retrieval_similarity"]
+        )
         work["affinity_score"] = (
             work["combined_retrieval_score"]
             if hybrid_mode

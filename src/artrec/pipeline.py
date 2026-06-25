@@ -1,10 +1,10 @@
 from __future__ import annotations
 from pathlib import Path
+import pandas as pd
 from artrec.data.catalog import CatalogConfig, generate_catalog, save_catalog
 from artrec.simulation.behavior import BehaviorSimulator, SimulationConfig
 from artrec.features.build import (
     build_training_frame,
-    train_test_split_by_time,
     train_validation_test_split_by_time,
     save_feature_frames,
 )
@@ -66,11 +66,12 @@ def build_end_to_end(
     train_core_df, validation_df, test_df = train_validation_test_split_by_time(
         feature_df, validation_ratio=0.2, test_ratio=0.2
     )
-    train_df, _ = train_test_split_by_time(feature_df, test_ratio=0.2)
-    save_feature_frames(train_df, test_df, processed_dir, validation_df=validation_df)
+    save_feature_frames(
+        train_core_df, test_df, processed_dir, validation_df=validation_df
+    )
 
     logger.info("Training retrieval and ranking layers")
-    ranker = ArtRanker.fit(train_df)
+    ranker = ArtRanker.fit(train_core_df)
     ranker.save(artifact_dir / "ranker.joblib")
     logistic_baseline = ArtRanker.fit(train_core_df)
     lightgbm_baseline = LightGBMLearningToRanker.fit(
@@ -107,6 +108,7 @@ def build_end_to_end(
             retriever=retriever,
             ranker=ranker,
             semantic_retriever=semantic_retriever,
+            history_cutoff=pd.to_datetime(train_core_df["timestamp"]).max(),
         )
     )
     model_metrics["intent_feedback"] = evaluate_intent_feedback_metrics(

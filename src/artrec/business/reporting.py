@@ -99,7 +99,7 @@ def write_business_report(
             lines.append(f"- {key.replace('_', ' ').title()}: **{ranking[key]:.4f}**")
     lines += [
         "",
-        "## Offline proxy uplift (honest simulated estimate)",
+        "## Offline logged-slate replay diagnostics",
     ]
     for key, payload in uplift.items():
         pct = payload.get("uplift_pct")
@@ -113,13 +113,14 @@ def write_business_report(
         "- Offline proxy only: metrics come from synthetic held-out data.",
         "- Not counterfactual: logged slate reranking can still be affected by exposure and selection bias.",
         "- Not A/B tested: no live users, production traffic, or commercial uplift proof is included.",
+        f"- Replay note: {model_metrics.get('proxy_uplift_notes', 'not provided')}",
         "",
         "## Notes on interpretation",
         "- All metrics in this report come from synthetic data.",
         "- Use the figures to judge the pipeline, evaluation workflow, and trade-off analysis, not real commercial impact.",
         "- The recommendation layer is personalised rather than popularity-only.",
         "- The re-ranking layer adds business logic: freshness, diversity, and margin-awareness.",
-        "- The uplift figures above are offline proxy estimates from held-out simulated sessions, not live experimental proof.",
+        "- The replay figures above are offline diagnostics from held-out simulated sessions, not live experimental proof.",
         "- The report is kept even when the reranker underperforms the logged baseline. In that case, the result points to weight tuning, ablation testing, or replacing the heuristic layer with a learned ranking policy.",
     ]
     output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")

@@ -1,9 +1,10 @@
 from pathlib import Path
 import sys
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from fastapi.testclient import TestClient
 from artrec.api import main as api_main
+from artrec.data.io import read_csv_with_types
 from artrec.pipeline import build_end_to_end
 from artrec.serve.recommender import RecommendationService
 
@@ -20,6 +21,7 @@ def _build_service(tmp_path):
         n_days=6,
         seed=3,
     )
+    train_df = read_csv_with_types(data_dir / "processed" / "train_features.csv")
     return RecommendationService.load(
         catalog_path=data_dir / "raw" / "catalog.csv",
         users_path=data_dir / "raw" / "users.csv",
@@ -27,6 +29,7 @@ def _build_service(tmp_path):
         ranker_path=artifact_dir / "ranker.joblib",
         impressions_path=data_dir / "raw" / "impressions.csv",
         semantic_retriever_path=artifact_dir / "semantic_retriever.joblib",
+        history_cutoff=train_df["timestamp"].max(),
     )
 
 
@@ -34,6 +37,9 @@ def test_service_smoke(tmp_path):
     service = _build_service(tmp_path)
     recs = service.recommend("user_0000", limit=5)
     assert len(recs) == 5
+    assert (
+        service.assets.impressions_df["timestamp"] <= service.assets.history_cutoff
+    ).all()
 
 
 def test_api_endpoints_and_validation(tmp_path):
@@ -58,6 +64,12 @@ def test_api_endpoints_and_validation(tmp_path):
 
     empty_search = client.post("/search", json={"query": "   ", "limit": 4})
     assert empty_search.status_code in {400, 422}
+
+    bad_price_range = client.post(
+        "/recommend",
+        json={"user_id": "user_0000", "limit": 5, "min_price": 500, "max_price": 100},
+    )
+    assert bad_price_range.status_code == 422
 
     hybrid = client.post(
         "/recommend",
@@ -134,7 +146,8 @@ def test_api_key_auth_when_enabled(tmp_path, monkeypatch):
     client = TestClient(api_main.app)
 
     assert client.get("/health").status_code == 200
-    assert client.get("/metrics").status_code == 200
+    assert client.get("/metrics").status_code == 401
+    assert client.get("/metrics", headers={"X-API-Key": "secret"}).status_code == 200
     assert (
         client.post("/recommend", json={"user_id": "user_0000", "limit": 3}).status_code
         == 401

@@ -4,7 +4,7 @@ import argparse
 import json
 import sys
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from artrec.data.io import read_csv_with_types
 from artrec.business.reporting import summarise_business_metrics, write_business_report
 from artrec.utils.common import dump_json

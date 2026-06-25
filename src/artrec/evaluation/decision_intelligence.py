@@ -55,7 +55,9 @@ def add_model_scores(frame: pd.DataFrame, ranker_path: Path | None = None) -> pd
         ranker = ArtRanker.load(ranker_path)
         work["model_score"] = ranker.score(work)
     else:
-        work["model_score"] = work.get("affinity_score", work.get("logging_policy_score", 0.0))
+        work["model_score"] = work.get(
+            "retrieval_similarity_pre", work.get("logging_policy_score", 0.0)
+        )
     return work
 
 
@@ -315,10 +317,11 @@ def write_ab_report(metrics: pd.DataFrame, ci: tuple[float, float], output_path:
     group_metrics = metrics[[col for col in group_columns if col in metrics.columns]]
     lift_metrics = summarize_lift_metrics(metrics)
     text = [
-        "# Offline A/B Test Simulation",
+        "# Offline Logged-Policy Replay",
         "",
-        "This is an offline synthetic experiment simulator using deterministic user assignment. "
-        "It is not a live A/B test and does not prove causal or commercial uplift.",
+        "This is an offline synthetic replay diagnostic using deterministic user assignment. "
+        "It reuses logged outcomes from already displayed slates, so it is not a live A/B test, "
+        "not a counterfactual estimator, and not proof of causal or commercial uplift.",
         "",
         f"- Bootstrap 95% CI for profit proxy lift: {ci[0]:.2f}% to {ci[1]:.2f}%.",
         "",
@@ -335,8 +338,15 @@ def write_ab_report(metrics: pd.DataFrame, ci: tuple[float, float], output_path:
     return output_path
 
 
-def build_user_segments(interactions: pd.DataFrame, catalog: pd.DataFrame, users: pd.DataFrame) -> pd.DataFrame:
+def build_user_segments(
+    interactions: pd.DataFrame,
+    catalog: pd.DataFrame,
+    users: pd.DataFrame,
+    cutoff: pd.Timestamp | str | None = None,
+) -> pd.DataFrame:
     merged = interactions.copy()
+    if cutoff is not None and "timestamp" in merged.columns:
+        merged = merged[pd.to_datetime(merged["timestamp"]) <= pd.to_datetime(cutoff)].copy()
     if "medium" not in merged.columns:
         merged = merged.merge(
             catalog[["item_id", "medium"]],
@@ -396,7 +406,9 @@ def write_user_segments_summary(segments: pd.DataFrame, output_path: Path) -> Pa
     text = [
         "# User Segments Summary",
         "",
-        "Segments are explainable rules over synthetic user interaction features. They are descriptive labels for this demo, not production customer personas.",
+        "Segments are explainable rules over synthetic user interaction features. "
+        "When used for uplift cuts, they are built from the pre-period only to avoid future-label leakage. "
+        "They are descriptive labels for this demo, not production customer personas.",
         "",
         _markdown_table(summary),
         "",
@@ -448,7 +460,8 @@ def write_uplift_summary(uplift: pd.DataFrame, output_path: Path) -> Path:
     text = [
         "# Simulated Uplift Summary",
         "",
-        "This report shows offline treatment-control lift from the synthetic simulator. It is not causal evidence and should not be described as real commercial uplift.",
+        "This report shows offline treatment-control replay diagnostics from the synthetic simulator. "
+        "Segments are pre-period labels, and the result is not causal evidence or real commercial uplift.",
         "",
         _markdown_table(top),
         "",

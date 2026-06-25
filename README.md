@@ -89,7 +89,9 @@ than it would be when serving new sessions.
 
 The serving model is intentionally simple and inspectable. A smaller model with
 clear artifacts, tests, and API behaviour is easier to review than a complex
-model that hides data leakage or serving assumptions.
+model that hides data leakage or serving assumptions. The model feature allowlist
+excludes post-event labels, simulator-only utility scores, and logged position
+features.
 
 Business reranking is applied after relevance scoring so the relevance versus
 exposure trade-off can be inspected. This makes it possible to discuss price
@@ -105,6 +107,35 @@ The document-intelligence component is deterministic by default. This keeps CI
 and local testing reproducible, avoids external API keys, and makes citation and
 refusal behaviour easier to test. A production version could replace this with
 a live LLM provider and separate prompt, safety, and cost evaluation.
+
+## Build Notes From The Project
+
+The hardest part was not getting a model to train. The harder part was making
+sure the numbers were not accidentally too good.
+
+Early on, it was very easy to create leakage without meaning to. For example,
+features such as logged position, simulator affinity, dwell time, or later user
+feedback can make offline metrics look better, but they are not fair serving
+features. I ended up keeping the supervised labels in the processed tables for
+training and evaluation, while using an explicit model feature allowlist for
+serving-safe inputs only.
+
+The synthetic behaviour simulator also took more tuning than I expected. If the
+click and purchase rates are too clean, the recommender looks unrealistically
+strong. If they are too noisy, the rest of the pipeline becomes hard to inspect.
+I spent time balancing the funnel so the generated data is useful for testing
+without pretending to be real marketplace behaviour.
+
+Another awkward part was the reporting layer. Reranking an already logged slate
+can show useful diagnostics, but it is not the same thing as a real A/B test. I
+kept the reports because they are useful for discussing trade-offs, but I changed
+the wording to logged-policy replay diagnostics rather than claiming causal
+uplift.
+
+The model artifacts were also a practical reminder that saved `joblib` files are
+environment-sensitive. That is why the project pins the Python/dependency
+versions and includes rebuild scripts instead of treating the committed artifacts
+as magic files.
 
 ## What Did Not Work Perfectly
 
@@ -360,9 +391,10 @@ set ARTREC_API_KEY=local-secret
 python -m uvicorn --app-dir src artrec.api.main:app --host 127.0.0.1 --port 8000
 ```
 
-Send `X-API-Key: local-secret` with protected requests. `/health` and `/metrics`
-remain public for the local demo. In a real deployment, `/metrics` should be
-private or behind internal networking.
+Send `X-API-Key: local-secret` with protected requests. `/health` remains public
+for the local demo. `/metrics` is public only when no `ARTREC_API_KEY` is set;
+when an API key is configured, metrics require the same header. In a real
+deployment, `/metrics` should be private or behind internal networking.
 
 ## Main Outputs
 
@@ -372,7 +404,7 @@ private or behind internal networking.
 - `data/raw/interactions.csv`: synthetic clicks, saves, carts, and purchases.
 - `data/raw/conversions.csv`: synthetic immediate and delayed purchases.
 - `data/processed/train_features.csv`: training feature rows.
-- `data/processed/validation_features.csv`: validation feature rows.
+- `data/processed/validation_features.csv`: disjoint later validation feature rows.
 - `data/processed/test_features.csv`: held-out feature rows.
 - `artifacts/retriever.joblib`: nearest-neighbour retriever.
 - `artifacts/semantic_retriever.joblib`: TF-IDF search retriever.
@@ -387,7 +419,7 @@ private or behind internal networking.
 
 The project reports ROC AUC, average precision, Precision@K, Recall@K,
 HitRate@K, NDCG@K, MAP@K, catalogue coverage, artist diversity, novelty, and
-offline proxy uplift.
+offline logged-slate replay diagnostics.
 
 These are useful engineering metrics, but they are not live business proof.
 Metrics are from synthetic data and should be used to judge the pipeline and

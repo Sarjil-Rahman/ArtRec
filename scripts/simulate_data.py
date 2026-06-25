@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse
 import sys
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from artrec.data.io import read_csv_with_types
 from artrec.simulation.behavior import BehaviorSimulator, SimulationConfig
 from artrec.utils.logging import get_logger
